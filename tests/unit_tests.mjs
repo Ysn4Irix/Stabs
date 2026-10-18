@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { isUrlExcluded, computeSnapshotHash } from '../lib/snapshot.js';
-import { formatSummaryMessage, formatSummaryCaption } from '../lib/telegram.js';
+import { formatSummaryMessage, formatSummaryCaption, generateDeviceHashtag, generatePlatformHashtags } from '../lib/telegram.js';
 
 console.log('Running unit tests for Stabs...');
 
@@ -144,7 +144,11 @@ const deviceMockSnapshot = {
 
 const deviceCaption = formatSummaryCaption(deviceMockSnapshot);
 assert.ok(deviceCaption.includes('<b>Device:</b> Work Laptop (Chrome)'), 'Caption must include device identifier');
-console.log('✓ Device identifier integration test passed');
+assert.ok(deviceCaption.includes('#device_work_laptop_chrome'), 'Caption must include sanitized device hashtag');
+assert.ok(deviceCaption.includes('#browser_chrome'), 'Caption must include browser hashtag');
+assert.ok(deviceCaption.includes('#os_windows'), 'Caption must include os hashtag');
+assert.strictEqual(generateDeviceHashtag('Work PC (Main)'), '#device_work_pc_main', 'Sanitizes special chars in hashtag');
+console.log('✓ Device identifier & hashtag integration tests passed');
 
 // 6. Android Browser & Environment detection test
 const { detectBrowserEnvironment } = await import('../lib/device.js');

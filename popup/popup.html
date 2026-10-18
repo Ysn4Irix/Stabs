@@ -16,7 +16,7 @@
       <div class="header-brand">
         <div class="brand-left">
           <h1 class="title">Stabs</h1>
-          <span class="version">v1.0.0</span>
+          <span class="version">v1.1.0</span>
         </div>
         <button type="button" id="btn-theme-toggle" class="theme-toggle-btn" aria-label="Toggle light or dark theme" title="Toggle theme">
           <span id="theme-icon" class="theme-icon" aria-hidden="true">☀️</span>
@@ -97,6 +97,12 @@
             <label for="input-chat-id" class="field-label">Telegram Chat ID</label>
             <input type="text" id="input-chat-id" class="text-input" placeholder="e.g. 987654321 or -100..." autocomplete="off">
             <span class="field-hint">Your numeric ID or channel/group ID.</span>
+          </div>
+
+          <div class="field-group">
+            <label for="input-topic-id" class="field-label">Topic ID / Thread ID (Optional)</label>
+            <input type="text" id="input-topic-id" class="text-input" placeholder="e.g. 42 (leave empty for general chat)" autocomplete="off">
+            <span class="field-hint">Optional. For Telegram Supergroups with Topics enabled.</span>
           </div>
 
           <div class="field-group">

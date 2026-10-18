@@ -31,13 +31,14 @@ async function runBackupProcess({ isManual = false } = {}) {
   const store = await chrome.storage.local.get([
     'botToken',
     'chatId',
+    'topicId',
     'intervalMinutes',
     'excludedDomains',
     'lastSyncHash',
     'snapshots'
   ]);
 
-  const { botToken, chatId, excludedDomains = [], lastSyncHash, snapshots = [] } = store;
+  const { botToken, chatId, topicId, excludedDomains = [], lastSyncHash, snapshots = [] } = store;
 
   if (!botToken || !chatId) {
     const errorMsg = 'Telegram bot token or chat ID is not configured.';
@@ -77,7 +78,7 @@ async function runBackupProcess({ isManual = false } = {}) {
 
   try {
     // Deliver hybrid backup to Telegram
-    await syncSnapshotToTelegram(botToken, chatId, snapshot);
+    await syncSnapshotToTelegram(botToken, chatId, snapshot, topicId);
 
     // Save snapshot in local history
     const updatedSnapshots = [snapshot, ...snapshots.filter(s => s.hash !== snapshot.hash)].slice(0, MAX_LOCAL_SNAPSHOTS);

@@ -32,6 +32,7 @@ const settingsForm = document.getElementById('settings-form');
 const inputDeviceName = document.getElementById('input-device-name');
 const inputBotToken = document.getElementById('input-bot-token');
 const inputChatId = document.getElementById('input-chat-id');
+const inputTopicId = document.getElementById('input-topic-id');
 const selectInterval = document.getElementById('select-interval');
 const customIntervalGroup = document.getElementById('custom-interval-group');
 const inputCustomInterval = document.getElementById('input-custom-interval');
@@ -346,6 +347,7 @@ async function loadSettings() {
     'deviceName',
     'botToken',
     'chatId',
+    'topicId',
     'intervalMinutes',
     'excludedDomains',
     'theme'
@@ -355,6 +357,7 @@ async function loadSettings() {
   inputDeviceName.value = store.deviceName || device.deviceName || '';
   inputBotToken.value = store.botToken || '';
   inputChatId.value = store.chatId || '';
+  inputTopicId.value = store.topicId || '';
 
   const standardIntervals = [15, 30, 60, 240, 0];
   const interval = Number(store.intervalMinutes !== undefined ? store.intervalMinutes : 30);
@@ -415,6 +418,7 @@ settingsForm.addEventListener('submit', async (e) => {
 
   const botToken = inputBotToken.value.trim();
   const chatId = inputChatId.value.trim();
+  const topicId = inputTopicId.value.trim();
 
   let intervalMinutes;
   if (selectInterval.value === 'custom') {
@@ -438,6 +442,7 @@ settingsForm.addEventListener('submit', async (e) => {
     deviceName,
     botToken,
     chatId,
+    topicId,
     intervalMinutes,
     excludedDomains,
     theme

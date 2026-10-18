@@ -87,4 +87,5 @@ This repository follows production-ready GitHub Actions automation and versionin
 
 - [Chrome Web Store Listing & Privacy Policy](docs/CHROMEWEBSTORE.md): Full store description, review justifications, and privacy disclosures.
 - [MVP Architecture & Specification](docs/stabs-mvp.md): Detailed specifications, architectural decisions, and development roadmap.
+- [Changelog](docs/CHANGELOG.md): Historical version releases, enhancements, and bug fixes.
 
