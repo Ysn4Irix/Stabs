@@ -31,3 +31,4 @@ OUTPUT_LANGUAGE is english
 
 ## GitHub CI/CD & Releases
 Configure production-ready GitHub workflows and version control. Follow Git best practices, use Conventional Commits and Semantic Versioning (`MAJOR.MINOR.PATCH`), automate linting, tests, builds, and security checks on PRs and pushes, and publish tagged releases with changelogs and artifacts. Use GitHub Actions, least-privilege permissions, secure secrets, caching, and fail-fast checks. Never commit secrets, bypass checks, or release broken builds. Document the workflow in `README.md`.
+**Git Policy:** Commit changes locally using Conventional Commits. Never push, publish, or sync to any remote repository unless explicitly authorized by the user.

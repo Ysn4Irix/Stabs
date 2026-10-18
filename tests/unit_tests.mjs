@@ -146,4 +146,63 @@ const deviceCaption = formatSummaryCaption(deviceMockSnapshot);
 assert.ok(deviceCaption.includes('<b>Device:</b> Work Laptop (Chrome)'), 'Caption must include device identifier');
 console.log('✓ Device identifier integration test passed');
 
+// 6. Android Browser & Environment detection test
+const { detectBrowserEnvironment } = await import('../lib/device.js');
+
+// Mock Kiwi Browser on Android user agent
+Object.defineProperty(globalThis.navigator, 'userAgent', {
+  value: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 Kiwi Chrome',
+  configurable: true
+});
+globalThis.chrome = {
+  runtime: {
+    getPlatformInfo: async () => ({ os: 'android', arch: 'arm64' })
+  }
+};
+
+const androidKiwiEnv = await detectBrowserEnvironment();
+assert.strictEqual(androidKiwiEnv.os, 'Android', 'OS should be detected as Android');
+assert.strictEqual(androidKiwiEnv.browser, 'Kiwi Browser', 'Browser should be detected as Kiwi Browser');
+assert.strictEqual(androidKiwiEnv.label, 'Kiwi Browser on Android', 'Label should match Kiwi Browser on Android');
+
+// Mock Firefox / Fenix on Android
+Object.defineProperty(globalThis.navigator, 'userAgent', {
+  value: 'Mozilla/5.0 (Android 14; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0',
+  configurable: true
+});
+const androidFirefoxEnv = await detectBrowserEnvironment();
+assert.strictEqual(androidFirefoxEnv.browser, 'Firefox', 'Browser should be detected as Firefox');
+
+console.log('✓ Android browser detection tests passed');
+
+// 7. Android snapshot fallback test (chrome.windows missing or throwing)
+const { captureSnapshot } = await import('../lib/snapshot.js');
+
+globalThis.chrome = {
+  // Simulating an Android browser with no chrome.windows support
+  windows: undefined,
+  tabGroups: undefined,
+  tabs: {
+    query: async () => [
+      { id: 101, title: 'Android Docs', url: 'https://developer.android.com', pinned: false },
+      { id: 102, title: 'GitHub', url: 'https://github.com', pinned: true }
+    ]
+  },
+  storage: {
+    local: {
+      get: async () => ({ deviceId: 'test-android-id', deviceName: 'Pixel 8' })
+    }
+  },
+  runtime: {
+    getPlatformInfo: async () => ({ os: 'android' })
+  }
+};
+
+const androidSnapshot = await captureSnapshot();
+assert.strictEqual(androidSnapshot.meta.totalTabs, 2, 'Snapshot should capture 2 tabs via Android tabs fallback');
+assert.strictEqual(androidSnapshot.meta.totalPinned, 1, 'Snapshot should capture 1 pinned tab');
+assert.strictEqual(androidSnapshot.windows.length, 1, 'Should bundle into 1 window');
+assert.strictEqual(androidSnapshot.windows[0].tabs[0].url, 'https://developer.android.com');
+console.log('✓ Android snapshot fallback test passed');
+
 console.log('All tests passed successfully!');

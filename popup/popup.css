@@ -43,7 +43,10 @@
 
 body {
   width: 380px;
+  max-width: 100vw;
   min-height: 460px;
+  margin: 0 auto;
+  overflow-x: hidden;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-family);
