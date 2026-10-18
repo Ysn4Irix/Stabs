@@ -149,35 +149,41 @@ console.log('✓ Device identifier integration test passed');
 // 6. Android Browser & Environment detection test
 const { detectBrowserEnvironment } = await import('../lib/device.js');
 
-// Mock Kiwi Browser on Android user agent
-Object.defineProperty(globalThis.navigator, 'userAgent', {
-  value: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 Kiwi Chrome',
-  configurable: true
-});
+function mockNavigatorUserAgent(userAgentString) {
+  if (!globalThis.navigator) {
+    globalThis.navigator = { userAgent: userAgentString };
+  } else {
+    try {
+      Object.defineProperty(globalThis.navigator, 'userAgent', {
+        value: userAgentString,
+        configurable: true
+      });
+    } catch {
+      globalThis.navigator = { userAgent: userAgentString };
+    }
+  }
+}
+
 globalThis.chrome = {
   runtime: {
     getPlatformInfo: async () => ({ os: 'android', arch: 'arm64' })
   }
 };
 
+// Mock Kiwi Browser on Android user agent
+mockNavigatorUserAgent('Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36 Kiwi Chrome');
 const androidKiwiEnv = await detectBrowserEnvironment();
 assert.strictEqual(androidKiwiEnv.os, 'Android', 'OS should be detected as Android');
 assert.strictEqual(androidKiwiEnv.browser, 'Kiwi Browser', 'Browser should be detected as Kiwi Browser');
 assert.strictEqual(androidKiwiEnv.label, 'Kiwi Browser on Android', 'Label should match Kiwi Browser on Android');
 
 // Mock Firefox / Fenix on Android
-Object.defineProperty(globalThis.navigator, 'userAgent', {
-  value: 'Mozilla/5.0 (Android 14; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0',
-  configurable: true
-});
+mockNavigatorUserAgent('Mozilla/5.0 (Android 14; Mobile; rv:125.0) Gecko/125.0 Firefox/125.0');
 const androidFirefoxEnv = await detectBrowserEnvironment();
 assert.strictEqual(androidFirefoxEnv.browser, 'Firefox', 'Browser should be detected as Firefox');
 
 // Mock Quetta Browser on Android
-Object.defineProperty(globalThis.navigator, 'userAgent', {
-  value: 'Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36 Quetta/2.0',
-  configurable: true
-});
+mockNavigatorUserAgent('Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36 Quetta/2.0');
 const androidQuettaEnv = await detectBrowserEnvironment();
 assert.strictEqual(androidQuettaEnv.os, 'Android', 'OS should be detected as Android');
 assert.strictEqual(androidQuettaEnv.browser, 'Quetta Browser', 'Browser should be detected as Quetta Browser');
