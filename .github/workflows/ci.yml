@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Syntax & Lint Checks
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Run Fast Checklist
+        run: python .agents/scripts/checklist.py .
+
+      - name: Build Extension Package
+        run: npm run build
+
+      - name: Upload Extension Artifact
+        if: matrix.node-version == '22.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: stabs-extension-package
+          path: dist/*.zip
+          if-no-files-found: error

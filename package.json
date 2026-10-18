@@ -1,0 +1,21 @@
+{
+  "name": "stabs",
+  "version": "1.0.0",
+  "description": "Periodically preserve open tabs and synchronize session backups with Telegram.",
+  "type": "module",
+  "scripts": {
+    "lint": "node --check background/service-worker.js lib/device.js lib/snapshot.js lib/telegram.js lib/restorer.js popup/popup.js",
+    "test": "node tests/unit_tests.mjs",
+    "build": "node scripts/build.mjs",
+    "validate": "npm run lint && npm run test"
+  },
+  "keywords": [
+    "chrome-extension",
+    "manifest-v3",
+    "telegram",
+    "tab-manager",
+    "backup"
+  ],
+  "author": "",
+  "license": "MIT"
+}

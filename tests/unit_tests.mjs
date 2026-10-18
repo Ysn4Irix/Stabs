@@ -1,0 +1,149 @@
+import assert from 'node:assert';
+import { isUrlExcluded, computeSnapshotHash } from '../lib/snapshot.js';
+import { formatSummaryMessage, formatSummaryCaption } from '../lib/telegram.js';
+
+console.log('Running unit tests for Stabs...');
+
+// 1. URL exclusion tests
+assert.strictEqual(isUrlExcluded('chrome://extensions'), true, 'chrome:// scheme should be excluded');
+assert.strictEqual(isUrlExcluded('chrome-extension://xyz/popup.html'), true, 'chrome-extension:// should be excluded');
+assert.strictEqual(isUrlExcluded('edge://settings'), true, 'edge:// should be excluded');
+assert.strictEqual(isUrlExcluded('about:blank'), true, 'about:blank should be excluded');
+assert.strictEqual(isUrlExcluded('http://localhost:3000', ['localhost']), true, 'localhost should be excluded');
+assert.strictEqual(isUrlExcluded('http://127.0.0.1:8080', ['127.0.0.1']), true, '127.0.0.1 should be excluded');
+assert.strictEqual(isUrlExcluded('https://sub.corp.internal', ['*.corp.internal']), true, '*.corp.internal wildcard should be excluded');
+assert.strictEqual(isUrlExcluded('https://github.com/project', ['localhost']), false, 'github.com should NOT be excluded');
+console.log('✓ URL exclusion tests passed');
+
+// 2. Hash calculation tests
+const mockSnapshot1 = {
+  windows: [
+    {
+      tabs: [
+        { url: 'https://github.com', pinned: false, groupId: null },
+        { url: 'https://docs.google.com', pinned: true, groupId: 12 }
+      ]
+    }
+  ]
+};
+
+const mockSnapshot2 = {
+  windows: [
+    {
+      tabs: [
+        { url: 'https://github.com', pinned: false, groupId: null },
+        { url: 'https://docs.google.com', pinned: true, groupId: 12 }
+      ]
+    }
+  ]
+};
+
+const mockSnapshotDifferent = {
+  windows: [
+    {
+      tabs: [
+        { url: 'https://github.com', pinned: false, groupId: null },
+        { url: 'https://news.ycombinator.com', pinned: true, groupId: 12 }
+      ]
+    }
+  ]
+};
+
+const hash1 = await computeSnapshotHash(mockSnapshot1);
+const hash2 = await computeSnapshotHash(mockSnapshot2);
+const hashDiff = await computeSnapshotHash(mockSnapshotDifferent);
+
+assert.strictEqual(hash1, hash2, 'Identical snapshots must yield identical hashes');
+assert.notStrictEqual(hash1, hashDiff, 'Different snapshots must yield different hashes');
+assert.strictEqual(hash1.length, 64, 'SHA-256 hash must be 64 hex characters');
+console.log('✓ Hash calculation tests passed');
+
+// 3. Summary formatting test
+const fullMockSnapshot = {
+  version: 1,
+  timestamp: 1729257600000,
+  isoDate: '2026-10-18T13:20:00.000Z',
+  meta: {
+    totalWindows: 2,
+    totalTabs: 7,
+    totalGroups: 1,
+    totalPinned: 1
+  },
+  windows: [
+    {
+      windowId: 1,
+      tabs: [
+        { title: 'Home <News>', url: 'https://example.com' },
+        { title: 'Docs & API', url: 'https://example.org/docs' }
+      ]
+    }
+  ]
+};
+
+const formatted = formatSummaryMessage(fullMockSnapshot);
+assert.ok(formatted.includes('<b>Stabs Tab Backup</b>'), 'Contains title');
+assert.ok(formatted.includes('&lt;News&gt;'), 'HTML escaped <News>');
+assert.ok(formatted.includes('&amp; API'), 'HTML escaped & API');
+assert.ok(formatted.includes('<b>Tabs:</b> 7'), 'Contains tab count');
+assert.ok(formatted.includes('<b>Windows:</b> 2'), 'Contains window count');
+assert.ok(formatted.includes('...and 5 more tabs in attached backup.'), 'Shows remaining tabs note');
+console.log('✓ Summary formatting tests passed');
+
+// 4. Single-message caption limit test (must never exceed 1024 characters)
+const largeMockTabs = [];
+for (let i = 0; i < 150; i++) {
+  largeMockTabs.push({
+    title: `Very long title of page ${i} with extra descriptions and details that could exceed limits`,
+    url: `https://example.com/very/long/path/to/article/number/${i}?param=extra&ref=long`
+  });
+}
+
+const largeSnapshot = {
+  version: 1,
+  timestamp: Date.now(),
+  isoDate: new Date().toISOString(),
+  meta: {
+    totalWindows: 5,
+    totalTabs: 150,
+    totalGroups: 4,
+    totalPinned: 3
+  },
+  windows: [{ windowId: 1, tabs: largeMockTabs }]
+};
+
+const caption = formatSummaryCaption(largeSnapshot);
+assert.ok(caption.length <= 1024, `Caption length must be <= 1024 chars, got ${caption.length}`);
+assert.ok(caption.includes('<b>Stabs Tab Backup</b>'), 'Contains header');
+assert.ok(caption.includes('150'), 'Contains tab count');
+console.log(`✓ Single-message caption bound test passed (${caption.length} chars <= 1024)`);
+
+// 5. Device identifier in summary caption test
+const deviceMockSnapshot = {
+  version: 1,
+  timestamp: 1729257600000,
+  isoDate: '2026-10-18T14:15:00.000Z',
+  device: {
+    id: 'device123',
+    name: 'Work Laptop (Chrome)',
+    browser: 'Chrome',
+    os: 'Windows'
+  },
+  meta: {
+    totalWindows: 1,
+    totalTabs: 3,
+    totalGroups: 0,
+    totalPinned: 0
+  },
+  windows: [
+    {
+      windowId: 1,
+      tabs: [{ title: 'Code Editor', url: 'https://example.com/code' }]
+    }
+  ]
+};
+
+const deviceCaption = formatSummaryCaption(deviceMockSnapshot);
+assert.ok(deviceCaption.includes('<b>Device:</b> Work Laptop (Chrome)'), 'Caption must include device identifier');
+console.log('✓ Device identifier integration test passed');
+
+console.log('All tests passed successfully!');

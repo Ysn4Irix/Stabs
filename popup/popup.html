@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Stabs Chrome extension popup interface for preserving tabs and synchronizing backups with Telegram.">
+  <meta property="og:title" content="Stabs: Tab Preservation & Telegram Backup">
+  <meta property="og:description" content="Periodically preserve open tabs and synchronize session backups with Telegram.">
+  <title>Stabs</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
+  <div class="app-container">
+    <header class="header">
+      <div class="header-brand">
+        <div class="brand-left">
+          <h1 class="title">Stabs</h1>
+          <span class="version">v1.0.0</span>
+        </div>
+        <button type="button" id="btn-theme-toggle" class="theme-toggle-btn" aria-label="Toggle light or dark theme" title="Toggle theme">
+          <span id="theme-icon" class="theme-icon" aria-hidden="true">☀️</span>
+        </button>
+      </div>
+      <nav class="nav-tabs" role="tablist">
+        <button type="button" class="tab-btn active" id="tab-overview" role="tab" aria-selected="true" aria-controls="view-overview">Overview</button>
+        <button type="button" class="tab-btn" id="tab-history" role="tab" aria-selected="false" aria-controls="view-history">Restore</button>
+        <button type="button" class="tab-btn" id="tab-settings" role="tab" aria-selected="false" aria-controls="view-settings">Settings</button>
+      </nav>
+    </header>
+
+    <main id="main-content" class="main-content">
+      <!-- VIEW: OVERVIEW -->
+      <section id="view-overview" class="view-panel active" role="tabpanel" aria-labelledby="tab-overview">
+        <div class="card status-card">
+          <div class="status-row">
+            <span class="label">Browser / Device</span>
+            <span id="device-display" class="value">Detecting...</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Telegram Target</span>
+            <span id="target-display" class="value">Not connected</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Last Synced</span>
+            <span id="last-sync-display" class="value">Never</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Sync Schedule</span>
+            <span id="schedule-display" class="value">Every 30 min</span>
+          </div>
+          <div class="status-row">
+            <span class="label">Last Status</span>
+            <span id="status-message-display" class="value subtle">Idle</span>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button type="button" id="btn-sync-now" class="primary-btn">Sync Now</button>
+        </div>
+
+        <div id="sync-feedback" class="feedback-text" aria-live="polite"></div>
+      </section>
+
+      <!-- VIEW: RESTORE & HISTORY -->
+      <section id="view-history" class="view-panel" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <div class="section-header">
+          <h2 class="section-title">Local Snapshots</h2>
+          <label for="import-file-input" class="secondary-btn file-label" tabindex="0">Import Backup</label>
+          <input type="file" id="import-file-input" accept=".json" class="visually-hidden">
+        </div>
+
+        <div id="snapshots-list" class="snapshots-container">
+          <!-- Dynamically populated -->
+          <div class="empty-state">No local snapshots saved yet.</div>
+        </div>
+
+        <div id="restore-feedback" class="feedback-text" aria-live="polite"></div>
+      </section>
+
+      <!-- VIEW: SETTINGS -->
+      <section id="view-settings" class="view-panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+        <form id="settings-form" class="settings-form">
+          <div class="field-group">
+            <label for="input-device-name" class="field-label">Browser / Device Identifier</label>
+            <input type="text" id="input-device-name" class="text-input" placeholder="e.g. Work PC, MacBook, Chrome Windows">
+            <span class="field-hint">Labels your backups so you can distinguish devices in Telegram.</span>
+          </div>
+
+          <div class="field-group">
+            <label for="input-bot-token" class="field-label">Telegram Bot Token</label>
+            <input type="password" id="input-bot-token" class="text-input" placeholder="123456789:ABCdef..." autocomplete="off">
+            <span class="field-hint">Obtain from @BotFather on Telegram.</span>
+          </div>
+
+          <div class="field-group">
+            <label for="input-chat-id" class="field-label">Telegram Chat ID</label>
+            <input type="text" id="input-chat-id" class="text-input" placeholder="e.g. 987654321 or -100..." autocomplete="off">
+            <span class="field-hint">Your numeric ID or channel/group ID.</span>
+          </div>
+
+          <div class="field-group">
+            <label for="select-interval" class="field-label">Periodic Backup Interval</label>
+            <select id="select-interval" class="select-input">
+              <option value="15">Every 15 minutes</option>
+              <option value="30">Every 30 minutes (recommended)</option>
+              <option value="60">Every 1 hour</option>
+              <option value="240">Every 4 hours</option>
+              <option value="custom">Custom interval...</option>
+              <option value="0">Disabled (manual only)</option>
+            </select>
+          </div>
+
+          <div id="custom-interval-group" class="field-group" hidden>
+            <label for="input-custom-interval" class="field-label">Custom Interval (in minutes)</label>
+            <input type="number" id="input-custom-interval" class="text-input" min="1" max="10080" placeholder="e.g. 45">
+            <span class="field-hint">Specify interval in minutes (minimum 1 minute).</span>
+          </div>
+
+          <div class="field-group">
+            <label for="select-theme" class="field-label">Interface Theme</label>
+            <select id="select-theme" class="select-input">
+              <option value="system">Follow System</option>
+              <option value="dark">Dark Theme</option>
+              <option value="light">Light Theme</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="input-excluded-domains" class="field-label">Excluded Domains</label>
+            <textarea id="input-excluded-domains" class="textarea-input" rows="2" placeholder="localhost, 127.0.0.1, internal.net"></textarea>
+            <span class="field-hint">Comma-separated list of domains to exclude.</span>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="btn-test-connection" class="secondary-btn">Test Connection</button>
+            <button type="submit" class="primary-btn">Save Settings</button>
+          </div>
+
+          <div id="settings-feedback" class="feedback-text" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>
