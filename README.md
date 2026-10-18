@@ -16,7 +16,9 @@ A Manifest V3 Chrome extension designed to periodically preserve open tabs, tab 
 
 ```
 ├── manifest.json              # Manifest V3 extension configuration
-├── CHROMEWEBSTORE.md          # Store listing, permissions justification & privacy details
+├── docs/
+│   ├── CHROMEWEBSTORE.md      # Store listing, permissions justification & privacy details
+│   └── stabs-mvp.md           # MVP architecture, tasks & specification
 ├── background/
 │   └── service-worker.js      # Background worker handling alarms, diff check & sync
 ├── lib/
@@ -71,3 +73,9 @@ This repository follows production-ready GitHub Actions automation and versionin
 - **Release Pipeline (`.github/workflows/release.yml`):** Automatically triggers when pushing a semantic version tag (e.g. `git tag v1.0.0 && git push origin v1.0.0`) or via manual dispatch. Validates integrity, builds the distribution `.zip`, creates a GitHub Release, and publishes release notes and downloadable assets.
 - **Versioning:** Adheres to Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - **Commit Standards:** Follows Conventional Commits format (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
+
+## Documentation
+
+- [Chrome Web Store Listing & Privacy Policy](docs/CHROMEWEBSTORE.md): Full store description, review justifications, and privacy disclosures.
+- [MVP Architecture & Specification](docs/stabs-mvp.md): Detailed specifications, architectural decisions, and development roadmap.
+
