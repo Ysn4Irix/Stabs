@@ -20,6 +20,8 @@ __pycache__/
 .env
 .env.local
 .env.*.local
+*.pem
+*.key
 
 # Operating System
 .DS_Store

@@ -13,6 +13,7 @@
 - **Browser & Device Identifier:** Distinguish backups across multiple machines in your Telegram chat with auto-detected platform labels and customizable device names.
 - **Light & Dark Mode Support:** Seamless support for light and dark themes with a one-click header toggle or automatic system matching.
 - **Configurable Scheduling & Filtering:** Set custom backup intervals in minutes (or choose standard 15m, 30m, 1h, 4h, or manual only) and define domain exclusion filters (e.g. `localhost`, `127.0.0.1`, `*.internal`).
+- **Cross-Platform & Android Support:** Verified for desktop (Chrome, Edge, Brave, Opera, Vivaldi) and Android extension browsers (**Quetta Browser**, **Kiwi Browser**, **Lemur Browser**, and **Firefox for Android**).
 
 ## Directory Structure
 
@@ -39,6 +40,12 @@
 
 ## Setup & Installation
 
+### Option A: Install via Signed CRX Package
+1. Download the latest `stabs-v1.0.0.crx` from [GitHub Releases](https://github.com/Ysn4Irix/Stabs/releases).
+2. On desktop, drag and drop the `.crx` file into `chrome://extensions/` with Developer mode enabled.
+3. On Android (Quetta Browser, Kiwi, Lemur), open the browser Extensions menu and choose **(from .zip/.crx/.user.js)** to install directly.
+
+### Option B: Load Unpacked Source
 1. Open Google Chrome (or Chromium-based browser) and navigate to `chrome://extensions/`.
 2. Enable **Developer mode** using the toggle in the top-right corner.
 3. Click **Load unpacked** and select this directory (`stabs`).

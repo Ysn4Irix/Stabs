@@ -173,7 +173,17 @@ Object.defineProperty(globalThis.navigator, 'userAgent', {
 const androidFirefoxEnv = await detectBrowserEnvironment();
 assert.strictEqual(androidFirefoxEnv.browser, 'Firefox', 'Browser should be detected as Firefox');
 
-console.log('✓ Android browser detection tests passed');
+// Mock Quetta Browser on Android
+Object.defineProperty(globalThis.navigator, 'userAgent', {
+  value: 'Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36 Quetta/2.0',
+  configurable: true
+});
+const androidQuettaEnv = await detectBrowserEnvironment();
+assert.strictEqual(androidQuettaEnv.os, 'Android', 'OS should be detected as Android');
+assert.strictEqual(androidQuettaEnv.browser, 'Quetta Browser', 'Browser should be detected as Quetta Browser');
+assert.strictEqual(androidQuettaEnv.label, 'Quetta Browser on Android', 'Label should match Quetta Browser on Android');
+
+console.log('✓ Android browser detection tests passed (Kiwi, Firefox, Quetta)');
 
 // 7. Android snapshot fallback test (chrome.windows missing or throwing)
 const { captureSnapshot } = await import('../lib/snapshot.js');

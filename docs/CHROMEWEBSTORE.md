@@ -22,6 +22,7 @@ Key Features:
 - Browser and device identifier: Auto-detects device type and allows custom labels to easily distinguish backups from multiple computers.
 - Privacy-first direct sync: All communications travel directly between your browser and api.telegram.org using your own bot token. No intermediary servers, accounts, or trackers.
 - Domain filtering: Exclude local networks, intranets, or sensitive websites from being captured.
+- Mobile browser ready: Verified with Android extension browsers including Quetta Browser, Kiwi Browser, and Lemur Browser.
 
 How to Use:
 1. Open the Stabs extension popup.

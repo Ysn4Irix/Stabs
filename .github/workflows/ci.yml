@@ -53,5 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: stabs-extension-package
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*.crx
           if-no-files-found: error
