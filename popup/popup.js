@@ -92,6 +92,7 @@ async function refreshOverview() {
   const store = await chrome.storage.local.get([
     'botToken',
     'chatId',
+    'topicId',
     'intervalMinutes',
     'lastSyncTime',
     'lastSyncStatus',
@@ -102,7 +103,9 @@ async function refreshOverview() {
   deviceDisplay.textContent = device.deviceName || 'Browser';
 
   if (store.chatId) {
-    targetDisplay.textContent = `Chat ID: ${store.chatId}`;
+    targetDisplay.textContent = store.topicId
+      ? `Chat ID: ${store.chatId} (#${store.topicId})`
+      : `Chat ID: ${store.chatId}`;
   } else {
     targetDisplay.textContent = 'Not configured';
   }
