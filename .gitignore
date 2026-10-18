@@ -7,6 +7,9 @@ build/
 # Dependencies
 node_modules/
 
+# Agent toolkit
+.agents/
+
 # Python
 __pycache__/
 *.py[cod]

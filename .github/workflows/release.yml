@@ -39,7 +39,11 @@ jobs:
         run: |
           npm run lint
           npm run test
-          python .agents/scripts/checklist.py .
+          if [ -f .agents/scripts/checklist.py ]; then
+            python .agents/scripts/checklist.py .
+          else
+            echo "Skipping checklist: .agents directory omitted from repository."
+          fi
 
       - name: Build Extension Artifact
         run: npm run build

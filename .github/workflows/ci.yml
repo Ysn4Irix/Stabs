@@ -38,7 +38,12 @@ jobs:
         run: npm run test
 
       - name: Run Fast Checklist
-        run: python .agents/scripts/checklist.py .
+        run: |
+          if [ -f .agents/scripts/checklist.py ]; then
+            python .agents/scripts/checklist.py .
+          else
+            echo "Skipping checklist: .agents directory omitted from repository."
+          fi
 
       - name: Build Extension Package
         run: npm run build

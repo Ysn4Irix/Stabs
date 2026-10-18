@@ -1,6 +1,8 @@
-# Stabs: Tab Preservation & Telegram Backup
-
-A Manifest V3 Chrome extension designed to periodically preserve open tabs, tab groups, and windows, syncing them directly to Telegram with full session restore capability.
+<div align="center">
+  <img src="icons/icon-128.png" alt="Stabs Logo" width="96" height="96">
+  <h1>Stabs: Tab Preservation & Telegram Backup</h1>
+  <p>A Manifest V3 Chrome extension designed to periodically preserve open tabs, tab groups, and windows, syncing them directly to Telegram with full session restore capability.</p>
+</div>
 
 ## Features
 
