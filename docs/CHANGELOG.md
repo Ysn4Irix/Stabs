@@ -5,6 +5,12 @@ All notable changes to the Stabs extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-10-18
+
+### Added
+- Automated Git tag creation and remote pushing upon push to `main` in the GitHub Actions release workflow.
+- Pre-flight remote tag detection to gracefully skip duplicate releases on non-versioned commits.
+
 ## [1.1.1] - 2026-10-18
 
 ### Fixed

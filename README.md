@@ -79,7 +79,7 @@ npm run build
 This repository follows production-ready GitHub Actions automation and versioning best practices:
 
 - **CI Pipeline (`.github/workflows/ci.yml`):** Automatically executes on pushes and pull requests to `main`. It runs syntax checks, unit tests, AG Kit fast checklist validation, builds the production bundle, and uploads the extension artifact.
-- **Release Pipeline (`.github/workflows/release.yml`):** Automatically triggers when pushing a semantic version tag (e.g. `git tag v1.0.0 && git push origin v1.0.0`) or via manual dispatch. Validates integrity, builds the distribution `.zip`, creates a GitHub Release, and publishes release notes and downloadable assets.
+- **Release Pipeline (`.github/workflows/release.yml`):** Automatically triggers on pushes to `main` (auto-creating and pushing the tag if the version in `package.json` is new), on direct tag pushes (`v*.*.*`), or via manual workflow dispatch. Validates integrity, builds the distribution packages (`.zip` and signed `.crx`), creates a GitHub Release, and publishes release notes and downloadable assets.
 - **Versioning:** Adheres to Semantic Versioning (`MAJOR.MINOR.PATCH`).
 - **Commit Standards:** Follows Conventional Commits format (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
 

@@ -2,12 +2,14 @@ name: Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*.*.*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g. v1.0.0)'
+        description: 'Release tag (e.g. v1.1.2)'
         required: false
         default: ''
 
@@ -48,17 +50,51 @@ jobs:
       - name: Build Extension Artifact
         run: npm run build
 
-      - name: Determine Release Tag
+      - name: Determine & Manage Release Tag
         id: vars
         run: |
+          case "${GITHUB_REF}" in
+            refs/tags/*)
+              IS_TAG_PUSH=true
+              ;;
+            *)
+              IS_TAG_PUSH=false
+              ;;
+          esac
+
           if [ -n "${{ github.event.inputs.tag }}" ]; then
             TAG="${{ github.event.inputs.tag }}"
-          else
+          elif [ "${IS_TAG_PUSH}" = "true" ]; then
             TAG="${GITHUB_REF_NAME}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+            TAG="v${VERSION}"
           fi
+
+          echo "Target tag: ${TAG}"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
+          REMOTE_TAG=$(git ls-remote --tags origin "refs/tags/${TAG}")
+          if [ -n "${REMOTE_TAG}" ]; then
+            if [ "${IS_TAG_PUSH}" = "false" ]; then
+              echo "Tag ${TAG} already exists on remote. Skipping duplicate release."
+              echo "skip_release=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Release triggered by tag push for ${TAG}. Proceeding."
+              echo "skip_release=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Tag ${TAG} does not exist on remote. Creating tag..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "${TAG}" -m "Release ${TAG}"
+            git push origin "${TAG}"
+            echo "Successfully created and pushed tag ${TAG}."
+            echo "skip_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create GitHub Release
+        if: steps.vars.outputs.skip_release != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
