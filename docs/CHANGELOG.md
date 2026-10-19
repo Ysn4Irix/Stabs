@@ -5,6 +5,13 @@ All notable changes to the Stabs extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-10-19
+
+### Fixed
+- Fixed inflated tab counts on Quetta Browser and Android Chromium by querying `chrome.tabs` directly instead of `chrome.windows.getAll`.
+- Prevented phantom duplicate windows on Android from repeating the entire open tab list across multiple window objects.
+- Added cross-window tab ID deduplication defense in snapshot extraction to ensure no tab is counted more than once.
+
 ## [1.1.2] - 2026-10-18
 
 ### Added

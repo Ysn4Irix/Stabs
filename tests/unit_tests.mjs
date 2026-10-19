@@ -225,4 +225,53 @@ assert.strictEqual(androidSnapshot.windows.length, 1, 'Should bundle into 1 wind
 assert.strictEqual(androidSnapshot.windows[0].tabs[0].url, 'https://developer.android.com');
 console.log('✓ Android snapshot fallback test passed');
 
+// 8. Quetta Browser on Android duplicate windows bug reproduction test (19 windows * 19 tabs)
+const mock19Tabs = [];
+for (let i = 1; i <= 19; i++) {
+  mock19Tabs.push({
+    id: 1000 + i,
+    title: `Tab ${i}`,
+    url: `https://example.com/page/${i}`,
+    pinned: i === 1
+  });
+}
+
+// Simulate buggy mobile Chromium where chrome.windows.getAll returns 19 windows, each with all 19 tabs
+const buggy19Windows = [];
+for (let w = 1; w <= 19; w++) {
+  buggy19Windows.push({
+    id: w,
+    state: 'normal',
+    incognito: false,
+    tabs: [...mock19Tabs]
+  });
+}
+
+globalThis.chrome = {
+  windows: {
+    getAll: async () => buggy19Windows
+  },
+  tabGroups: undefined,
+  tabs: {
+    query: async () => mock19Tabs
+  },
+  storage: {
+    local: {
+      get: async () => ({ deviceId: 'quetta-s24-id', deviceName: 'QuettaS24' })
+    }
+  },
+  runtime: {
+    getPlatformInfo: async () => ({ os: 'android' })
+  }
+};
+
+mockNavigatorUserAgent('Mozilla/5.0 (Linux; Android 14; SM-S921B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36 Quetta/2.1');
+
+const quettaSnapshot = await captureSnapshot();
+assert.strictEqual(quettaSnapshot.meta.totalTabs, 19, `Total tabs must be 19 on Quetta Android, not 361. Got ${quettaSnapshot.meta.totalTabs}`);
+assert.strictEqual(quettaSnapshot.meta.totalWindows, 1, `Total windows must be 1 on Quetta Android, not 19. Got ${quettaSnapshot.meta.totalWindows}`);
+assert.strictEqual(quettaSnapshot.windows.length, 1, 'Windows array length must be 1');
+assert.strictEqual(quettaSnapshot.windows[0].tabs.length, 19, 'Single window must contain exactly 19 tabs');
+console.log('✓ Quetta Android duplicate tab & window prevention test passed (19 tabs, 1 window)');
+
 console.log('All tests passed successfully!');
