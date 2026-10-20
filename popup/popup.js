@@ -206,12 +206,74 @@ async function renderSnapshotsList() {
     restoreBtn.textContent = 'Restore';
     restoreBtn.addEventListener('click', () => handleRestoreSnapshot(snap, restoreBtn));
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'secondary-btn btn-delete';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.title = 'Delete this backup';
+    deleteBtn.setAttribute('aria-label', `Delete backup from ${formatDate(snap.timestamp)}`);
+    deleteBtn.addEventListener('click', () => handleDeleteSnapshot(snap, deleteBtn));
+
     actions.appendChild(restoreBtn);
+    actions.appendChild(deleteBtn);
     item.appendChild(info);
     item.appendChild(actions);
 
     snapshotsList.appendChild(item);
   });
+}
+
+// Delete Snapshot Action with Inline Confirmation
+let deleteConfirmTimeout = null;
+async function handleDeleteSnapshot(snapshot, button) {
+  if (button.dataset.confirming !== 'true') {
+    button.dataset.confirming = 'true';
+    button.textContent = 'Confirm?';
+    button.classList.add('btn-delete-confirm');
+    deleteConfirmTimeout = setTimeout(() => {
+      button.dataset.confirming = 'false';
+      button.textContent = 'Delete';
+      button.classList.remove('btn-delete-confirm');
+    }, 3000);
+    return;
+  }
+
+  if (deleteConfirmTimeout) {
+    clearTimeout(deleteConfirmTimeout);
+  }
+  button.disabled = true;
+  button.textContent = 'Deleting...';
+  restoreFeedback.textContent = '';
+  restoreFeedback.className = 'feedback-text';
+
+  try {
+    const res = await chrome.runtime.sendMessage({
+      action: 'DELETE_SNAPSHOT',
+      hash: snapshot.hash,
+      timestamp: snapshot.timestamp,
+      telegramMessageId: snapshot.telegramMessageId
+    });
+
+    if (res && res.ok) {
+      restoreFeedback.textContent = `Deleted backup from ${formatDate(snapshot.timestamp)}.`;
+      restoreFeedback.className = 'feedback-text success';
+      await renderSnapshotsList();
+    } else {
+      restoreFeedback.textContent = res ? res.error : 'Failed to delete backup.';
+      restoreFeedback.className = 'feedback-text error';
+      button.disabled = false;
+      button.textContent = 'Delete';
+      button.dataset.confirming = 'false';
+      button.classList.remove('btn-delete-confirm');
+    }
+  } catch (err) {
+    restoreFeedback.textContent = err.message || 'Deletion failed.';
+    restoreFeedback.className = 'feedback-text error';
+    button.disabled = false;
+    button.textContent = 'Delete';
+    button.dataset.confirming = 'false';
+    button.classList.remove('btn-delete-confirm');
+  }
 }
 
 // Restore Snapshot Action

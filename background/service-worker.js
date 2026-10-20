@@ -4,7 +4,7 @@
  */
 
 import { captureSnapshot } from '../lib/snapshot.js';
-import { syncSnapshotToTelegram } from '../lib/telegram.js';
+import { syncSnapshotToTelegram, deleteTelegramMessage } from '../lib/telegram.js';
 import { restoreSession } from '../lib/restorer.js';
 import { getDeviceIdentifier } from '../lib/device.js';
 
@@ -78,7 +78,10 @@ async function runBackupProcess({ isManual = false } = {}) {
 
   try {
     // Deliver hybrid backup to Telegram
-    await syncSnapshotToTelegram(botToken, chatId, snapshot, topicId);
+    const { docResult } = await syncSnapshotToTelegram(botToken, chatId, snapshot, topicId);
+    if (docResult && docResult.message_id) {
+      snapshot.telegramMessageId = docResult.message_id;
+    }
 
     // Save snapshot in local history
     const updatedSnapshots = [snapshot, ...snapshots.filter(s => s.hash !== snapshot.hash)].slice(0, MAX_LOCAL_SNAPSHOTS);
@@ -179,6 +182,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     restoreSession(message.snapshot)
       .then(result => sendResponse({ ok: true, result }))
       .catch(err => sendResponse({ ok: false, error: err.message }));
+    return true;
+  }
+
+  if (message.action === 'DELETE_SNAPSHOT') {
+    (async () => {
+      try {
+        const store = await chrome.storage.local.get(['snapshots', 'lastSyncHash', 'botToken', 'chatId']);
+        const snapshots = store.snapshots || [];
+        const targetHash = message.hash;
+        const targetTimestamp = message.timestamp;
+
+        const targetSnapshot = snapshots.find(s => (targetHash && s.hash === targetHash) || (targetTimestamp && s.timestamp === targetTimestamp));
+
+        const updatedSnapshots = snapshots.filter(s => {
+          if (targetHash && s.hash) {
+            return s.hash !== targetHash;
+          }
+          return s.timestamp !== targetTimestamp;
+        });
+
+        const updates = { snapshots: updatedSnapshots };
+        if (store.lastSyncHash && targetSnapshot && targetSnapshot.hash === store.lastSyncHash) {
+          updates.lastSyncHash = updatedSnapshots.length > 0 ? updatedSnapshots[0].hash : null;
+        }
+
+        await chrome.storage.local.set(updates);
+
+        if (store.botToken && store.chatId && (message.telegramMessageId || targetSnapshot?.telegramMessageId)) {
+          const msgId = message.telegramMessageId || targetSnapshot?.telegramMessageId;
+          await deleteTelegramMessage(store.botToken, store.chatId, msgId);
+        }
+
+        sendResponse({ ok: true });
+      } catch (err) {
+        sendResponse({ ok: false, error: err.message });
+      }
+    })();
     return true;
   }
 

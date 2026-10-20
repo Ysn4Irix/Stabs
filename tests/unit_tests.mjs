@@ -274,4 +274,33 @@ assert.strictEqual(quettaSnapshot.windows.length, 1, 'Windows array length must 
 assert.strictEqual(quettaSnapshot.windows[0].tabs.length, 19, 'Single window must contain exactly 19 tabs');
 console.log('✓ Quetta Android duplicate tab & window prevention test passed (19 tabs, 1 window)');
 
+// 9. Snapshot deletion & Telegram deleteMessage tests
+const { deleteTelegramMessage } = await import('../lib/telegram.js');
+
+assert.strictEqual(await deleteTelegramMessage('', '123', 456), false, 'Empty token must return false');
+assert.strictEqual(await deleteTelegramMessage('token', '', 456), false, 'Empty chat ID must return false');
+assert.strictEqual(await deleteTelegramMessage('token', '123', null), false, 'Null message ID must return false');
+
+const originalFetch = globalThis.fetch;
+let deleteCalled = false;
+globalThis.fetch = async (url, opts) => {
+  if (url.includes('/deleteMessage')) {
+    deleteCalled = true;
+    const body = JSON.parse(opts.body);
+    assert.strictEqual(body.chat_id, '123456');
+    assert.strictEqual(body.message_id, 789);
+    return {
+      json: async () => ({ ok: true, result: true })
+    };
+  }
+  return originalFetch ? originalFetch(url, opts) : { json: async () => ({ ok: true }) };
+};
+
+const delRes = await deleteTelegramMessage('fake-token', '123456', 789);
+assert.strictEqual(delRes, true, 'deleteTelegramMessage must return true on success');
+assert.strictEqual(deleteCalled, true, 'deleteMessage API must be invoked');
+globalThis.fetch = originalFetch;
+
+console.log('✓ Snapshot deletion & deleteTelegramMessage tests passed');
+
 console.log('All tests passed successfully!');

@@ -403,6 +403,25 @@ body {
   font-size: 11px;
 }
 
+.btn-delete {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--color-error);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.btn-delete:hover {
+  background-color: rgba(244, 63, 94, 0.12);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.btn-delete-confirm {
+  background-color: var(--color-error) !important;
+  color: #ffffff !important;
+  border-color: var(--color-error) !important;
+}
+
 .empty-state {
   text-align: center;
   padding: 24px 12px;
